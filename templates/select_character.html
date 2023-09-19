@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <title>Select Character</title>
+    <style>
+        .character-img {
+            width: 200px;
+            height: auto;
+            cursor: pointer;
+        }
+
+        body {
+            background-image: url("/static/bg-select-character.png");
+            background-repeat: repeat-y;
+            background-attachment: fixed;
+            background-position: center top;
+
+
+            /* Adjust this according to your preference */
+            background-size: auto 100%;
+            background-repeat: no-repeat;
+        }
+
+        .banner-img {
+            height: auto;
+            max-width: 80%;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+
+<body>
+
+    <audio id="background-music" loop autoplay>
+        <source src="{{ url_for('static', filename='select_character.mp3') }}" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+
+    <div class="container mt-5 text-center">
+        <!-- <h1 class="mb-5">Select your character</h1> -->
+        <div class="row justify-content-center">
+            <div class="col-12 mb-5 text-center">
+                <img src="/static/chattabox.png" class="banner-img" alt="Chattabox">
+            </div>
+            <div class="col-12 mb-5 text-center">
+                <img src="/static/choose-buddy.png" class="banner-img" alt="Choose Buddy">
+            </div>
+            <div class="col-12 mb-5 text-center">
+                <img class="character-img" src="/static/ganesh.png" alt="penny" onclick="selectCharacter('ganesh')">
+
+            </div>
+            <div class="col-12 mb-5 text-center">
+                <img class="banner-img" src="/static/title-ganesh.png" alt="ganesh title"
+                    onclick="selectCharacter('penny')">
+            </div>
+            <div class="col-12 mb-5 text-center">
+                <img class="character-img" src="/static/penny.png" alt="penny" onclick="selectCharacter('penny')">
+
+            </div>
+            <div class="col-12 mb-5 text-center">
+                <img class="banner-img" src="/static/title-penny.png" alt="penny title"
+                    onclick="selectCharacter('penny')">
+            </div>
+            <div class="col-12 mb-5 text-center">
+                <img class="character-img" src="/static/eric.png" alt="eric" onclick="selectCharacter('eric')">
+            </div>
+            <div class="col-12 mb-5 text-center">
+                <img class="banner-img" src="/static/title-eric.png" alt="eric title"
+                    onclick="selectCharacter('eric')">
+            </div>
+            <div class="col-12 mb-5 text-center">
+                <img class="character-img" src="/static/pirate-boy.png" alt="pirate-boy"
+                    onclick="selectCharacter('pirate-boy')">
+            </div>
+            <div class="col-12 mb-5 text-center">
+                <img class="banner-img" src="/static/title-pirate-boy.png" alt="pirate-boy title"
+                    onclick="selectCharacter('pirate-boy')">
+            </div>
+            <div class="col-12 mb-5 text-center">
+                <img class="character-img" src="/static/pirate-girl.png" alt="pirate-girl"
+                    onclick="selectCharacter('pirate-girl')">
+            </div>
+            <div class="col-12 mb-5 text-center">
+                <img class="banner-img" src="/static/title-pirate-girl.png" alt="pirate-girl title"
+                    onclick="selectCharacter('pirate-girl')">
+            </div>
+            <div class="col-12 mb-5 text-center">
+                <img class="character-img" src="/static/sonic.png" alt="sonic" onclick="selectCharacter('sonic')">
+            </div>
+            <div class="col-12 mb-5 text-center">
+                <img class="banner-img" src="/static/title-sonic.png" alt="sonic title"
+                    onclick="selectCharacter('sonic')">
+            </div>
+            <div class="col-12 mb-5 text-center">
+                <img class="character-img" src="/static/bookworm.png" alt="bookworm"
+                    onclick="selectCharacter('bookworm')">
+            </div>
+            <div class="col-12 mb-5 text-center">
+                <img class="banner-img" src="/static/title-bookworm.png" alt="bookworm title"
+                    onclick="selectCharacter('bookworm')">
+            </div>
+        </div>
+    </div>
+
+
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script>
+
+        function selectCharacter(character) {
+            const voiceIds = {
+                'ganesh': 'OnLxrd7FyfahLfYqFMix',
+                'penny': 'd6h9rMX5IpAR9ZrWOmjm',
+                'eric': 'P7igz6QOJ1M3ox5nSaHv',
+                'pirate-boy': 'BKlVt2XsQVXct6DX3z4d',
+                'pirate-girl': 'UsbTp18WLaRmauNA3Hnn',
+                'sonic': 'B0sDakOCRhhcSbDc0U2d',
+                'bookworm': '41Zt72AmIqyFy77mLmsn'
+                // ... other characters
+            };
+            const voiceId = voiceIds[character.toLowerCase()] || 'default_voice_id';
+
+            // const voiceId = voiceIds[character] || 'default_voice_id';
+            $.post('/set-character', { character_name: character.toLowerCase(), voice_id: voiceId }, function () {
+                window.location.href = '/';
+            });
+        }
+
+        // New code to set the volume
+    window.addEventListener("DOMContentLoaded", function() {
+        const audioElement = document.getElementById("background-music");
+        audioElement.volume = 0.04; // Set volume to 50%
+    });
+    </script>
+
+</body>
+
+</html>

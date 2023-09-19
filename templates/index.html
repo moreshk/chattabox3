@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html data-bs-theme="light">
+
+<head>
+    <!-- <title>Sonic</title> -->
+    <title id="character-title">{{ session['selected_character_long'] | default('Sonic the Hedgehog', true) }}</title>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+
+    <link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://unpkg.com/typeit@8.7.1/dist/index.umd.js"></script>
+</head>
+
+<body>
+    <audio id="background-music" loop autoplay>
+        <!-- <source src="{{ url_for('static', filename='select_character.mp3') }}" type="audio/mpeg"> -->
+        <source src="{{ url_for('static', filename=selected_character + '.mp3') }}" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+    <!-- Back Button -->
+    <div class="d-flex justify-content-center mb-3" style="position: fixed; top: 10px; width: 100%;">
+        <a href="javascript:history.back()" id="back-button">
+            <img src="{{ url_for('static', filename='back_button.png') }}" alt="Back" style="width:50px; height:auto;">
+        </a>
+    </div>
+
+    <div class="container text-center mt-5">
+        <div class="row">
+            <div class="col-12 col-md-6 col-xl-4 mx-auto">
+                <h1 class="mb-4" id="character-long-name">{{ session['selected_character_long'] | default('Sonic the
+                    Hedgehog', true) }}</h1>
+                <div id="chat-bubble"
+                    style="width: fit-content; max-width: 70%; padding: 10px 20px 20px 20px; margin: 30px auto 10px auto; position: relative; background-color: #f9f9f9; border: 3px solid #333; border-radius: 50px; font-size: 18px; line-height: 1.4; text-align: center; bottom: 0;">
+                    <p id="bot-response-text" class="mb-0" style="margin-bottom: 0;">Hello, ask me anything!</p>
+                    <div
+                        style="content: ''; position: absolute; bottom: 0; left: 50%; width: 0; height: 0; border: 20px solid transparent; border-top-color: #f9f9f9; border-bottom: 0; border-left: 0; margin-left: -10px; margin-bottom: -20px;">
+                    </div>
+                </div>
+                <div id="fixed-elements">
+
+                    <img id="character-img" class="mb-3"
+                        src="{{ url_for('static', filename=session['selected_character'] | default('sonic', true) + '.png') }}"
+                        alt="">
+
+                    <!-- <h1 class="mb-4">Sonic the Hedgehog</h1> -->
+
+
+                    <form>
+                        <div class="form-group mb-3">
+                            <textarea id="transcription-box" class="form-control" rows="3"
+                                placeholder="Hold down the record button to speak, release to send message"></textarea>
+                        </div>
+
+                        <button type="button" class="btn btn-danger large-round-button" id="record-button">
+                            <img id="record-icon" src="/static/record.png" alt="Record"
+                                style="width:100%; height:auto;">
+                        </button>
+                        <div id="status-text"></div>
+
+                    </form>
+
+                    <div class="audio-player">
+                        <audio id="audio-element"></audio>
+                    </div>
+                    <div class="response">
+                        <p id="response-text"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(() => {
+            document.getElementById('background-music').volume = 0.04;
+            const recordButton = $('#record-button');
+            const transcriptionBox = $('#transcription-box');
+            const audioElement = $('#audio-element')[0];
+            const conversation = [];
+
+            const disableButton = (btn) => {
+                btn.addClass("loading").prop("disabled", true);
+                $('#status-text').text('Transcribing...'); $('#status-text').text('Transcribing...');
+            }
+            const enableButton = (btn) => {
+                btn.removeClass("loading").prop("disabled", false);
+                $('#status-text').text('');
+            }
+
+            navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
+                mediaRecorder = new MediaRecorder(stream);
+                mediaRecorder.ondataavailable = (event) => {
+                    chunks.push(event.data);
+                };
+                mediaRecorder.onstop = () => {
+                    disableButton(recordButton);
+                    // recordButton[0].innerHTML = "Transcribing...";
+                    const audioData = new Blob(chunks, { type: 'audio/wav' });
+                    const formData = new FormData();
+                    formData.append('file', audioData, 'audio.wav');
+                    $.ajax({
+                        type: 'POST',
+                        url: '/transcribe',
+                        data: formData,
+                        contentType: false,
+                        processData: false,
+                        success: (data) => {
+                            transcriptionBox.val(data.text);
+                            enableButton(recordButton);
+                            // recordButton[0].innerHTML = "Record";
+                            $('#status-text').text('');
+                            askQuestionAndPlayAudio(); // Trigger the functionality
+                        }
+                    });
+                };
+            });
+
+            // Helper function to handle the start of the recording
+            function startRecording() {
+                $("#record-icon").attr("src", "/static/record_pressed.png"); // Change to the "pressed" icon
+                chunks = [];
+                mediaRecorder.start();
+            }
+
+            // Helper function to handle the end of the recording
+            function stopRecording() {
+                $("#record-icon").attr("src", "/static/record.png"); // Change back to the original icon
+                mediaRecorder.stop();
+            }
+
+            // Record audio when record button is pressed and held (desktop)
+            recordButton.on('mousedown', startRecording);
+
+            // Stop recording when record button is released (desktop)
+            recordButton.on('mouseup', stopRecording);
+
+            // Record audio when record button is touched and held (mobile)
+            recordButton.on('touchstart', function (event) {
+                event.preventDefault();  // Prevents mouse event from being triggered
+                startRecording();
+            });
+
+            // Stop recording when touch is released (mobile)
+            recordButton.on('touchend', function (event) {
+                event.preventDefault();  // Prevents mouse event from being triggered
+                stopRecording();
+            });
+
+            // Function to ask question and play audio
+            function askQuestionAndPlayAudio() {
+                disableButton(recordButton);
+                $('#status-text').text('Thinking...');
+                // recordButton[0].innerHTML = "Thinking...";
+                conversation.push({ role: "user", "content": transcriptionBox.val() })
+                const textData = { conversation: conversation };
+                $.ajax({
+                    type: 'POST',
+                    url: '/ask',
+                    data: JSON.stringify(textData),
+                    contentType: 'application/json',
+                    success: (data) => {
+                        const fileURL = data.audio;
+                        $("#bot-response-text").html(""); // Clear the chat bubble
+                        // $("#response-text")[0].innerHTML = "";
+                        conversation.push({ role: "assistant", "content": data.text })
+                        new TypeIt("#bot-response-text", {
+                            strings: data.text,
+                            speed: 39,
+                            waitUntilVisible: false,
+                            cursorChar: "▊",
+                        }).go();
+
+                        // const character = '{{ session["selected_character"] }}' || 'Sonic';  // Fetch from session
+                        const character = '{{ session["selected_character"] | lower }}' || 'sonic';
+
+                        const characterLower = character.toLowerCase();
+
+                        // Change the image to the animated GIF when the voice-over starts
+                        $("#character-img").attr("src", `/static/${characterLower}.gif`);
+
+                        audioElement.src = fileURL;
+                        audioElement.controls = true;
+                        audioElement.play();
+                        // Add an event listener to change the image back to static when the voice-over ends
+                        audioElement.onended = function () {
+                            audioElement.pause();
+                            audioElement.currentTime = 0;
+                            $("#character-img").attr("src", `/static/${characterLower}.png`); // Restore original character image
+                        };
+
+                        enableButton(recordButton);
+                        // recordButton[0].innerHTML = "Record";
+                        $('#status-text').text('');
+                    }
+                });
+            }
+
+            // Set the character image dynamically
+            // const character = '{{ session["selected_character"] }}' || 'Sonic';  // Fetch from session
+            const character = '{{ session["selected_character"] | lower }}' || 'sonic';
+
+            const characterLower = character.toLowerCase(); // Convert to lowercase for file name
+            $('#character-img').attr('src', `/static/${characterLower}.png`);  // Set the character image based on the session value
+
+            const characterLongName = '{{ session["selected_character_long"] | default("Sonic the Hedgehog", true) }}';
+            $("#character-long-name").text(characterLongName);  // Change the H1 header
+            $("#character-title").text(characterLongName);      // Change the title
+
+            // Add this click event listener for the "Back" button
+            $("#back-button").click(() => {
+                const bgMusic = document.getElementById('background-music');
+                bgMusic.pause();
+                bgMusic.currentTime = 0;
+                bgMusic.src = ""; // This line will remove the audio source and stop the audio
+            });
+
+        });
+
+        window.onbeforeunload = function () {
+            const bgMusic = document.getElementById('background-music');
+            bgMusic.pause();
+            bgMusic.currentTime = 0;
+            bgMusic.src = ""; // This line will remove the audio source and stop the audio
+        };
+
+    </script>
+    <script>
+        $(document).ready(() => {
+            const character = '{{ session["selected_character"] | lower }}' || 'sonic';
+            $("body").css("background-image", `url('/static/bg-${character}.png')`);
+        });
+    </script>
+
+    <script>
+        const statusText = $('#status-text');
+
+        const disableButton = (btn) => {
+            btn.addClass("loading").prop("disabled", true);
+            statusText.text('Transcribing...');
+            statusText.css('visibility', 'visible');  // Make it visible
+        }
+
+        const enableButton = (btn) => {
+            btn.removeClass("loading").prop("disabled", false);
+            statusText.text('');
+            statusText.css('visibility', 'hidden');  // Hide it
+        }
+
+    </script>
+
+</body>
+
+</html>

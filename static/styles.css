@@ -1,0 +1,119 @@
+.audio-player {
+    margin-top: 20px;
+    margin-bottom: 40px;
+    display: none;
+}
+
+.large-round-button {
+    border-radius: 50%;
+    width: 125px;
+    height: 125px;
+    padding: 10px;
+    font-size: 20px;
+    text-align: center;
+    line-height: 80px;
+    margin: 10px;
+}
+
+.response {
+    margin-bottom: 40px;
+    display: none;
+}
+
+/* ... your existing CSS ... */
+.fixed-character-img {
+    position: fixed;
+    top: 300px;
+    /* Adjust this value to move the image down */
+    left: 50%;
+    /* Center the image horizontally */
+    transform: translateX(-50%);
+    /* Required for centering */
+}
+
+.container {
+    margin-top: 400px;
+    /* Adjust this based on the size of the image and desired spacing */
+}
+
+#record-button.btn.btn-danger {
+    background-color: transparent !important;
+    border: none !important;
+}
+
+#fixed-elements {
+    position: fixed;
+    bottom: 0px; /* Adjust this value to push the elements downwards */
+    left: 50%; /* Center the element horizontally */
+    transform: translateX(-50%); /* Required for centering */
+    max-width: 70%; /* Make it the same as the chat bubble */
+    background-color: white;
+    z-index: 1;
+    background-color: rgba(255, 255, 255, 0); /* Again, adjust transparency as needed */
+    padding-top: 20px; /* Add this property to reduce the space above the image */
+}
+
+body {
+    background-image: url('bg-pirate-boy.png'); /* Replace with the actual path to your image */
+    background-attachment: fixed;
+    background-position: center top; /* Adjust this according to your preference */
+    background-size: auto 100%;
+    background-repeat: no-repeat;
+}
+
+#transcription-box {
+    display: none;
+  }
+  
+#character-img {
+    margin-bottom: 0px; /* Adjust this value to reduce the space below the image */
+    height: 300px; /* Adjust this value to the desired size */
+}
+
+#record-button {
+    margin-top: 0px; /* Adjust this value to reduce the space above the button */
+}
+
+
+#character-long-name {
+    margin-top: 40px;  /* Increase this based on how far down you want to push the character name */
+    display: none;
+}
+
+#chat-bubble {
+    margin-top: 190px;  /* Increase this based on how far down you want to push the chat bubble */
+    margin-bottom: 10px;
+    background-color: rgba(249, 249, 249, 0.5);
+}
+
+#status-text {
+    height: 20px;  /* Adjust this value based on the size of the text */
+    visibility: hidden;  /* Initially set to hidden */
+}
+
+
+/* Media query for screens smaller than 768px */
+@media (max-width: 768px) {
+    #character-img {
+        height: 250px; /* Adjust to your preference */
+    }
+
+    .large-round-button {
+        width: 100px;  /* Adjust to your preference */
+        height: 100px; /* Adjust to your preference */
+        line-height: 50px; /* Adjust to your preference */
+    }
+}
+
+/* Media query for screens smaller than 576px */
+@media (max-width: 576px) {
+    #character-img {
+        height: 200px; /* Adjust to your preference */
+    }
+
+    .large-round-button {
+        width: 80px;  /* Adjust to your preference */
+        height: 80px; /* Adjust to your preference */
+        line-height: 40px; /* Adjust to your preference */
+    }
+}
