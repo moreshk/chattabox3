@@ -162,4 +162,4 @@ cython_debug/
 temp.html
 chattabox3/
 .DS_Store
-
+outputs/

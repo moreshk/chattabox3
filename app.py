@@ -5,6 +5,10 @@ import requests
 import uuid
 from flask import Flask, request, jsonify, send_file, render_template
 from dotenv import load_dotenv
+
+from flask_sqlalchemy import SQLAlchemy
+from flask_user import UserManager, UserMixin
+
 # Load environment variables from .env file
 load_dotenv()
 
@@ -34,7 +38,30 @@ CHARACTER_PROMPTS = {
 
 
 app = Flask(__name__)
-app.secret_key = os.urandom(24)
+# app.secret_key = os.urandom(24)
+
+import secrets
+app.secret_key = secrets.token_urlsafe(24)
+
+# Flask Configuration for SQLAlchemy
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("DATABASE_URI")
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # Silence the deprecation warning
+app.config['USER_EMAIL_SENDER_EMAIL'] = os.getenv("EMAIL_SENDER")
+
+
+db = SQLAlchemy(app)
+
+class User(db.Model, UserMixin):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(50), nullable=False, unique=True)
+    password = db.Column(db.String(255), nullable=False, server_default='')
+    active = db.Column(db.Boolean(), nullable=False, server_default='0')
+
+user_manager = UserManager(app, db, User)
+
+# Create tables
+with app.app_context():
+    db.create_all()
 
 def get_voices() -> list:
     """Fetch the list of available ElevenLabs voices.
@@ -238,3 +265,7 @@ def listen(filename):
 
 if __name__ == '__main__':
     app.run()
+
+
+
+
